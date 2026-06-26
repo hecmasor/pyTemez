@@ -189,3 +189,46 @@ def Temez_time_series(P_time_series, ET0_time_series, parameters, initial_condit
         [Q[time_step], initial_conditions[0], initial_conditions[1]] = Temez_single_stage([P_time_series[time_step], ET0_time_series[time_step]] , parameters, initial_conditions)
              
     return(Q)
+
+
+############################
+### SERPIS RIVER EXAMPLE ###
+############################
+
+parameters_Serpis = [   [692.97, 0.04, 231.70, 0.73, 468.60],
+                        [791.22, 0.01, 41.77, 0.38, 108.24],
+                        [1186.65, 0.05, 35.84, 0.51, 149.37]  ]
+
+initial_conditions_Serpis = [    [0.00, 6.94],
+                                 [16.41, 2.90],
+                                 [124.21, 5.93]   ]
+
+models = ['GFDL_ESM4','IPSL_CM6A-LR', 'MPI_ESM1_2_HR', 'MRI_ESM2_0', 'UKESM1_0_11']
+scenarios = ['ssp126', 'ssp585']
+subbasins = ['Beniarres', 'Encantada', 'Vernissa']
+
+for model in models:
+    
+    for scenario in scenarios:
+
+        name_pr = 'PATH TO MASTER RAINFALL FILE' + model + '_' + scenario + '_pr_2015_2100_Serpis.csv'
+        name_ET0 = 'PATH TO MASTER ET0 FILE' + model + '_' + scenario + '_ET0_2015_2100_Serpis.csv'
+        
+        pr_dataframe = pd.read_csv(name_pr, sep = ';', index_col = 0) 
+        ET0_dataframe = pd.read_csv(name_pr, sep = ';', index_col = 0) 
+        
+        for subbasin_number in range(len(subbasins)):
+            
+            if subbasin_number == 0:
+                
+                output_dataframe = pr_dataframe[pr_dataframe.keys().values[0 : 2]]
+        
+            pr_time_series = pr_dataframe[subbasins[subbasin_number]].values
+            ET0_time_series = ET0_dataframe[subbasins[subbasin_number]].values
+            
+            output_dataframe[subbasins[subbasin_number]] = Temez_time_series(pr_time_series, ET0_time_series, parameters_Serpis[subbasin_number], initial_conditions_Serpis[subbasin_number])
+            
+        name_output = 'PATH TO OUTPUT FOLDER' + model + '_' + scenario + '_streamflow_2015_2100_Serpis.csv'
+        
+        output_dataframe.to_csv(name_output, sep=';')  
+        
